@@ -1,8 +1,11 @@
+const { sequelize } = require("../models");
+
 class RoomService {
     constructor(db) {
         this.client = db.sequelize;
-  this. Room = db. Room;
-        console.log(db)
+        this.Room = db.Room;
+        this.User = db.User
+        this.Reservation = db.Reservation;
     }
   
   async create(capacity, pricePerDay, hotelId) {
@@ -17,16 +20,30 @@ class RoomService {
   
     async get() {
   return this. Room.findAll({
-            where: {}
-        })
+            where: {
+
+            },
+            include:{
+             model: this.User,
+            trough: {
+                attributes: ['StartDate', 'EndDate']
+            }
+        }
+    })
     }
   
     async getHotelRooms(hotelId) {
-  return this. Room.findAll({
-            where: {
-                HotelId: hotelId
-            }
-        })
+        return this. Room.findAll({
+          where: {
+              HotelId: hotelId
+          },
+          include:{
+           model: this.User,
+          trough: {
+              attributes: ['StartDate', 'EndDate']
+          }
+        }
+    })
     }
   
     async deleteRoom(roomId) {
@@ -34,6 +51,19 @@ class RoomService {
             where: {id: roomId}
         })
     }
+
+    async rentARoom(userId, roomId, startDate, endDate) {
+
+        sequelize.query('CALL insert_reservation(:UserId, :RoomId, :StartDate, :EndDate)',{ replacements:
+            {
+              RoomId: roomId,
+              UserId: userId,
+              StartDate: startDate,
+              EndDate: endDate
+            }}).catch(function(err){
+                console.log(err)
+            })
+            }
   }
   
 module.exports = RoomService;

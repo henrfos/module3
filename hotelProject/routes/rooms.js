@@ -7,12 +7,14 @@ var db = require("../models");
 var roomService = new RoomService(db);
 /* GET rooms listing. */
 router.get('/:hotelId', async function(req, res, next) {
-  const rooms =  await roomService.getHotelRooms(req.params.hotelId);
-  res.render('rooms', { rooms: rooms });
+    const rooms =  await roomService.getHotelRooms(req.params.hotelId);
+    rooms.map(room => room.Users = room.Users.filter(user => user.id == 1).length > 0)
+    res.render('rooms', { rooms: rooms });
 });
 
 router.get('/', async function(req, res, next) {
     const rooms = await roomService.get();
+    rooms.map(room => room.Users = room.Users.filter(user => user.id == 1).length > 0)
     res.render('rooms', { rooms: rooms });
 });
 
@@ -28,6 +30,15 @@ router.delete('/', jsonParser, async function(req, res, next) {
   let id = req.body.id;
   await roomService.deleteRoom(id);
   res.end()
+});
+
+router.post('/reservation', jsonParser, async function(req, res, next) {
+    let userId = req.body.UserId;
+    let roomId = req.body.RoomId;
+    let startDate = req.body.StartDate;
+    let endDate = req.body.EndDate;
+    await roomService.rentARoom(userId, roomId, startDate, endDate);
+    res.end()
 });
 
 module.exports = router;
